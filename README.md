@@ -78,3 +78,30 @@ From your mac or PC:
 Download your own custom vision model from the custom vision service. You just need to replace the `ImageClassifierService/app/model.pb` and `ImageClassifierService/app/labels.txt` provided by the export feature of Custom Vision. 
 ### Update the configuration of the camera capture module
 Explore the various configuration options of the camera module availabel [here](https://github.com/Azure-Samples/Custom-vision-service-iot-edge-raspberry-pi/tree/master/modules/CameraCapture), to score your ai model against a camera feed vs a video clip, to resize your images, to see logs, etc.
+### Softwaremaker's Contributions
+### For those that are using the on-board Raspberry Pi Camera (as opposed to the USB Camera the author has shown in the video), the Raspberry Pi Camera needs to be exposed (visible) to OpenCV. Below are the steps:
+This entire bits can still work. Some minor tweakings to be done on the Raspberry Pi to enable the Official V4L2 Driver
+
+# Get the latest Raspbian packages
+sudo apt-get update
+sudo apt-get upgrade
+
+# Get the latest firmware
+sudo rpi-update
+
+# Load the module - Most important step. This exposes the Raspberry Pi Camera needs to be exposed (visible) to OpenCV in the author's code
+sudo modprobe bcm2835-v4l2
+
+# Testing
+# Record a video
+v4l2-ctl --set-fmt-video=width=1920,height=1088,pixelformat=4
+v4l2-ctl --stream-mmap=3 --stream-count=100 --stream-to=somefile.264
+# Capture a JPEG image
+v4l2-ctl --set-fmt-video=width=2592,height=1944,pixelformat=3
+v4l2-ctl --stream-mmap=3 --stream-count=1 --stream-to=somefile.jpg
+
+# Make sure the /dev/video0 stream/path is available to the bound container at /dev/video0
+ls -la /dev/video0
+lsmod | grep video
+
+# The same code will then still work without modifications to the author's codebase
